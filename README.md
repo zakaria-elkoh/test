@@ -96,7 +96,7 @@ DB_HOST=localhost
 DB_PORT=5432
 DB_NAME=stockflow
 DB_USER=postgres
-DB_PASSWORD=yourpassword    # must match the password you set in step 2
+DB_PASSWORD=yourpassword
 
 JWT_SECRET=change_this_to_a_long_random_string
 JWT_EXPIRES_IN=7d
@@ -138,13 +138,15 @@ Populates the database with demo data: 1 admin, 2 staff users, 5 categories, 15 
 
 ### Role permissions
 
-| Feature                                      | Admin | Staff |
-|----------------------------------------------|:-----:|:-----:|
-| View dashboard, products, categories, clients | ✅   | ✅    |
-| Create & edit products, categories, clients   | ✅   | ✅    |
-| **Delete** products, categories, clients      | ✅   | ❌    |
-| Create & manage orders (add items, status)    | ✅   | ✅    |
-| Record stock movements (IN / OUT)             | ✅   | ✅    |
+| Feature                                        | Admin | Staff |
+|------------------------------------------------|:-----:|:-----:|
+| Dashboard                                      | ✅    | ❌    |
+| Products — view / create / edit                | ✅    | ❌    |
+| Products — delete                              | ✅    | ❌    |
+| Categories — full CRUD                         | ✅    | ❌    |
+| Clients — view / create / edit / delete        | ✅    | ❌    |
+| Orders — create / manage items / change status | ✅    | ✅    |
+| Stock movements — add / view history           | ✅    | ✅    |
 
 ---
 

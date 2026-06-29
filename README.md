@@ -2,6 +2,10 @@
 
 A full-stack inventory and order management system built with Node.js, Express, PostgreSQL, React, and shadcn/ui.
 
+## Preview
+
+![StockFlow Dashboard](docs/screenshots/dashboard.png)
+
 ## Stack
 
 | Layer    | Tech                                      |
@@ -13,9 +17,14 @@ A full-stack inventory and order management system built with Node.js, Express, 
 
 ## Prerequisites
 
-- Node.js 18+
-- PostgreSQL 14+ running locally
-- npm
+Install these before starting:
+
+- **Node.js 18+** — https://nodejs.org
+- **PostgreSQL 14+**
+  - macOS: `brew install postgresql@16 && brew services start postgresql@16`
+  - Ubuntu/Debian: `sudo apt install postgresql postgresql-contrib && sudo systemctl start postgresql`
+  - Windows: https://www.postgresql.org/download/windows (use the installer)
+- **npm** (comes with Node.js)
 
 ---
 
@@ -23,45 +32,61 @@ A full-stack inventory and order management system built with Node.js, Express, 
 
 ```bash
 git clone <repo-url>
-cd stockflow
+cd <repo-folder>
 
 # Install backend dependencies
-cd backend && npm install
+cd backend
+npm install
 
 # Install frontend dependencies
-cd ../frontend && npm install
+cd ../frontend
+npm install
 ```
 
 ---
 
 ## 2 — Set up PostgreSQL
 
-Make sure PostgreSQL is running. On macOS with Homebrew:
+### macOS
 
 ```bash
-brew services start postgresql@16
-```
-
-Create the database and the postgres role if they don't exist yet:
-
-```bash
-# Create the role (if it doesn't exist)
+# Create the postgres role (skip if it already exists)
 psql -d postgres -c "CREATE ROLE postgres WITH SUPERUSER LOGIN PASSWORD 'yourpassword';"
 
 # Create the database
 psql -U postgres -c "CREATE DATABASE stockflow;"
 ```
 
+### Linux
+
+```bash
+# Switch to the postgres system user first
+sudo -u postgres psql -c "CREATE DATABASE stockflow;"
+
+# Optional: set a password for the postgres role
+sudo -u postgres psql -c "ALTER ROLE postgres WITH PASSWORD 'yourpassword';"
+```
+
+### Windows
+
+Open **pgAdmin** or the **psql shell** from the Start menu and run:
+
+```sql
+CREATE DATABASE stockflow;
+```
+
 ---
 
 ## 3 — Configure environment variables
+
+From the project root:
 
 ```bash
 cd backend
 cp .env.example .env
 ```
 
-Edit `backend/.env` and fill in your values:
+Open `backend/.env` and fill in your values:
 
 ```env
 PORT=3001
@@ -71,7 +96,7 @@ DB_HOST=localhost
 DB_PORT=5432
 DB_NAME=stockflow
 DB_USER=postgres
-DB_PASSWORD=yourpassword
+DB_PASSWORD=yourpassword    # must match the password you set in step 2
 
 JWT_SECRET=change_this_to_a_long_random_string
 JWT_EXPIRES_IN=7d
@@ -81,54 +106,67 @@ JWT_EXPIRES_IN=7d
 
 ## 4 — Run migrations
 
-This creates all the tables (users, categories, products, clients, orders, order_items, stock_movements):
+From inside the `backend/` folder:
 
 ```bash
-cd backend
 npm run migrate
 ```
+
+This creates all the tables: `users`, `categories`, `products`, `clients`, `orders`, `order_items`, `stock_movements`.
 
 ---
 
 ## 5 — Seed the database
 
-Populates the database with demo data — 1 admin, 2 staff users, 5 categories, 15 products, 5 clients, 10 orders, and stock movements:
+From inside the `backend/` folder:
 
 ```bash
 npm run seed
 ```
 
+Populates the database with demo data: 1 admin, 2 staff users, 5 categories, 15 products, 5 clients, 10 orders, and stock movements.
+
+> **Run this only once.** Running it again will fail with a duplicate key error because emails and SKUs are unique. If you need to reseed, drop and recreate the database first, then re-run migrate and seed.
+
 ### Demo credentials
 
-| Role  | Email                  | Password   |
-|-------|------------------------|------------|
-| Admin | admin@stockflow.com    | admin123   |
-| Staff | alice@stockflow.com    | staff123   |
-| Staff | bob@stockflow.com      | staff123   |
+| Role  | Email               | Password |
+|-------|---------------------|----------|
+| Admin | admin@stockflow.com | admin123 |
+| Staff | alice@stockflow.com | staff123 |
+| Staff | bob@stockflow.com   | staff123 |
 
-> Admin accounts can delete products and manage users. Staff accounts have read/write access to everything else.
+### Role permissions
+
+| Feature                                      | Admin | Staff |
+|----------------------------------------------|:-----:|:-----:|
+| View dashboard, products, categories, clients | ✅   | ✅    |
+| Create & edit products, categories, clients   | ✅   | ✅    |
+| **Delete** products, categories, clients      | ✅   | ❌    |
+| Create & manage orders (add items, status)    | ✅   | ✅    |
+| Record stock movements (IN / OUT)             | ✅   | ✅    |
 
 ---
 
 ## 6 — Start the servers
 
-Open two terminals:
+Open **two terminals** from the project root:
 
-**Terminal 1 — Backend** (runs on port 3001):
+**Terminal 1 — Backend** (port 3001):
 
 ```bash
 cd backend
 npm run dev
 ```
 
-**Terminal 2 — Frontend** (runs on port 5173):
+**Terminal 2 — Frontend** (port 5173):
 
 ```bash
 cd frontend
 npm run dev
 ```
 
-Then open [http://localhost:5173](http://localhost:5173) in your browser.
+Then open **http://localhost:5173** in your browser.
 
 ---
 
@@ -164,6 +202,14 @@ stockflow/
 
 ---
 
-## API base URL
+## Troubleshooting
 
-The frontend proxies `/api` to `http://localhost:3001` via Vite's dev proxy. No CORS configuration needed during development.
+**`psql: error: connection refused`** — PostgreSQL is not running. Start it with `brew services start postgresql@16` (macOS) or `sudo systemctl start postgresql` (Linux).
+
+**`role "postgres" does not exist`** — Run the CREATE ROLE command from step 2 using your system's default superuser (`psql -d postgres` on macOS, `sudo -u postgres psql` on Linux).
+
+**`database "stockflow" does not exist`** — You skipped the CREATE DATABASE step. Run it then redo migrate and seed.
+
+**Seed fails with duplicate key error** — The database was already seeded. No action needed unless you want fresh data; in that case drop and recreate the database, re-run migrate, then seed again.
+
+**Frontend shows blank page or API errors** — Make sure the backend is running on port 3001 before opening the frontend.

@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { Plus, Pencil, Trash2, Search, Tags } from 'lucide-react'
 import { toast } from 'sonner'
 import api from '@/lib/api'
+import { useAuth } from '@/hooks/useAuth'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -21,6 +22,7 @@ import {
 const EMPTY = { name: '' }
 
 export default function CategoriesPage() {
+  const { isAdmin } = useAuth()
   const [categories, setCategories] = useState([])
   const [loading, setLoading]       = useState(true)
   const [search, setSearch]         = useState('')
@@ -112,9 +114,11 @@ export default function CategoriesPage() {
             {loading ? '—' : `${categories.length} categor${categories.length !== 1 ? 'ies' : 'y'}`}
           </p>
         </div>
-        <Button onClick={openCreate}>
-          <Plus className="size-4" /> Add category
-        </Button>
+        {isAdmin && (
+          <Button onClick={openCreate}>
+            <Plus className="size-4" /> Add category
+          </Button>
+        )}
       </div>
 
       {/* Search */}
@@ -135,7 +139,7 @@ export default function CategoriesPage() {
             <TableRow>
               <TableHead>Name</TableHead>
               <TableHead>Created</TableHead>
-              <TableHead className="text-right w-24">Actions</TableHead>
+              {isAdmin && <TableHead className="text-right w-24">Actions</TableHead>}
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -150,7 +154,7 @@ export default function CategoriesPage() {
               : filtered.length === 0
                 ? (
                     <TableRow>
-                      <TableCell colSpan={3} className="text-center text-muted-foreground py-12">
+                      <TableCell colSpan={isAdmin ? 3 : 2} className="text-center text-muted-foreground py-12">
                         <div className="flex flex-col items-center gap-2">
                           <Tags className="size-8 opacity-30" />
                           {search ? 'No categories match your search.' : 'No categories yet. Add one to get started.'}
@@ -162,20 +166,22 @@ export default function CategoriesPage() {
                     <TableRow key={cat.id}>
                       <TableCell className="font-medium">{cat.name}</TableCell>
                       <TableCell className="text-muted-foreground text-sm">{fmtDate(cat.created_at)}</TableCell>
-                      <TableCell className="text-right">
-                        <div className="flex justify-end gap-1">
-                          <Button variant="ghost" size="icon" onClick={() => openEdit(cat)}>
-                            <Pencil className="size-4" />
-                          </Button>
-                          <Button
-                            variant="ghost" size="icon"
-                            className="text-destructive hover:text-destructive"
-                            onClick={() => setDeleteTarget(cat)}
-                          >
-                            <Trash2 className="size-4" />
-                          </Button>
-                        </div>
-                      </TableCell>
+                      {isAdmin && (
+                        <TableCell className="text-right">
+                          <div className="flex justify-end gap-1">
+                            <Button variant="ghost" size="icon" onClick={() => openEdit(cat)}>
+                              <Pencil className="size-4" />
+                            </Button>
+                            <Button
+                              variant="ghost" size="icon"
+                              className="text-destructive hover:text-destructive"
+                              onClick={() => setDeleteTarget(cat)}
+                            >
+                              <Trash2 className="size-4" />
+                            </Button>
+                          </div>
+                        </TableCell>
+                      )}
                     </TableRow>
                   ))
             }

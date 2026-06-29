@@ -10,23 +10,38 @@ import ClientsPage from '@/pages/ClientsPage'
 import OrdersPage from '@/pages/OrdersPage'
 import StockPage from '@/pages/StockPage'
 
+function AdminOnly({ user, children }) {
+  if (!user) return null
+  return user.role === 'admin' ? children : <Navigate to="/orders" replace />
+}
+
 export default function App() {
   const { user, login, logout } = useAuth()
+
+  const home = user?.role === 'admin' ? '/' : '/orders'
 
   return (
     <Routes>
       <Route path="/login" element={
-        user ? <Navigate to="/" replace /> : <LoginPage onLogin={login} />
+        user ? <Navigate to={home} replace /> : <LoginPage onLogin={login} />
       } />
       <Route element={<AppLayout user={user} onLogout={logout} />}>
-        <Route path="/"           element={<DashboardPage />} />
-        <Route path="/products"   element={<ProductsPage />} />
-        <Route path="/categories" element={<CategoriesPage />} />
-        <Route path="/clients"    element={<ClientsPage />} />
-        <Route path="/orders"     element={<OrdersPage />} />
-        <Route path="/stock"      element={<StockPage />} />
+        <Route path="/" element={
+          <AdminOnly user={user}><DashboardPage /></AdminOnly>
+        } />
+        <Route path="/products" element={
+          <AdminOnly user={user}><ProductsPage /></AdminOnly>
+        } />
+        <Route path="/categories" element={
+          <AdminOnly user={user}><CategoriesPage /></AdminOnly>
+        } />
+        <Route path="/clients" element={
+          <AdminOnly user={user}><ClientsPage /></AdminOnly>
+        } />
+        <Route path="/orders" element={<OrdersPage />} />
+        <Route path="/stock"  element={<StockPage />} />
       </Route>
-      <Route path="*" element={<Navigate to="/" replace />} />
+      <Route path="*" element={<Navigate to={home} replace />} />
     </Routes>
   )
 }

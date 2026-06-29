@@ -16,7 +16,7 @@ import {
 import { Button } from '@/components/ui/button'
 import { useState } from 'react'
 
-const navItems = [
+const adminNavItems = [
   { to: '/',           label: 'Dashboard',      icon: LayoutDashboard, end: true },
   { to: '/products',   label: 'Products',        icon: Package },
   { to: '/categories', label: 'Categories',      icon: Tags },
@@ -25,10 +25,16 @@ const navItems = [
   { to: '/stock',      label: 'Stock Movements', icon: ArrowLeftRight },
 ]
 
+const staffNavItems = [
+  { to: '/orders', label: 'Orders',          icon: ShoppingCart },
+  { to: '/stock',  label: 'Stock Movements', icon: ArrowLeftRight },
+]
+
 export function AppSidebar({ user, onLogout }) {
   const navigate = useNavigate()
   const location = useLocation()
   const [showLogout, setShowLogout] = useState(false)
+  const navItems = user?.role === 'admin' ? adminNavItems : staffNavItems
 
   const handleLogout = () => {
     onLogout()
